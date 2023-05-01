@@ -1,0 +1,81 @@
+const express = require('express');
+const request = require("request");
+const router = express.Router();
+const Location = require('../models/location');
+
+// API 호출방법
+// WEATHER_API_BEFORE {lat=57&lon=-2.15} WEATHER_API_AFTER
+router.get('/:location', async (req, res) => {
+  let lo = req.params.location;
+  
+  let four = await Location.findOne({ "four": { $regex: '.*' + lo + '.*' } })
+  if (four == null) {
+
+    let three = await Location.findOne({ "three": { $regex: '.*' + lo + '.*' } })
+
+    if (three == null) {
+
+      let two = await Location.findOne({ "two": { $regex: '.*' + lo + '.*' } })
+
+      if (two == null) {
+
+        let one = await Location.findOne({ "one": { $regex: '.*' + lo + '.*' } })
+
+        if (one == null) {
+          res.send('정확하지 않은 입력값입니다.')
+        }
+        else {
+          let url = process.env.WEATHER_API_BEFORE + 'lat=' + one.latitude + '&' + 'lon='
+            + one.longitude + process.env.WEATHER_API_AFTER;
+          request(url, (err, response, body) => {
+            if (err) {
+              console.log('API error');
+            } else {
+              let weather = JSON.parse(body);
+              res.send(weather);
+            }
+          })
+        }
+      }
+      else {
+        let url = process.env.WEATHER_API_BEFORE + 'lat=' + two.latitude + '&' + 'lon='
+          + two.longitude + process.env.WEATHER_API_AFTER;
+        request(url, (err, response, body) => {
+          if (err) {
+            console.log('API error');
+          } else {
+            let weather = JSON.parse(body);
+            res.send(weather);
+          }
+        })
+      }
+    }
+    else {
+      let url = process.env.WEATHER_API_BEFORE + 'lat=' + three.latitude + '&' + 'lon='
+        + three.longitude + process.env.WEATHER_API_AFTER;
+      request(url, (err, response, body) => {
+        if (err) {
+          console.log('API error');
+        } else {
+          let weather = JSON.parse(body);
+          res.send(weather);
+        }
+      })
+    }
+  }
+  else {
+    let url = process.env.WEATHER_API_BEFORE + 'lat=' + four.latitude + '&' + 'lon='
+      + four.longitude + process.env.WEATHER_API_AFTER;
+    request(url, (err, response, body) => {
+      if (err) {
+        console.log('API error');
+      } else {
+        let weather = JSON.parse(body);
+        res.send(weather);
+      }
+    })
+  }
+
+})
+
+module.exports = router;
